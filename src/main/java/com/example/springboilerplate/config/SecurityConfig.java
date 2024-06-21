@@ -4,8 +4,6 @@ import com.example.springboilerplate.filters.JWTFilter;
 import com.example.springboilerplate.filters.LoginFilter;
 import com.example.springboilerplate.utils.JWT;
 import com.example.springboilerplate.utils.ResponseFactory;
-import com.example.springboilerplate.utils.ResponseUtils;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

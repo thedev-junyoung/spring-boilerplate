@@ -27,8 +27,8 @@ public class JsonResponseFactory implements ResponseFactory {
         SuccessResponseDTO<T> response = new SuccessResponseDTO<>(
                 "success",
                 1,
-                data,
-                message
+                message,
+                data
         );
         return ResponseEntity.ok(response);
     }
@@ -39,6 +39,8 @@ public class JsonResponseFactory implements ResponseFactory {
         errorDetails.put("error", details);
 
         ErrorResponseDTO response = new ErrorResponseDTO(
+                "error",
+                0,
                 status.value(),
                 message,
                 errorDetails

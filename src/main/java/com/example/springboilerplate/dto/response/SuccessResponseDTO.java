@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class SuccessResponseDTO<T> {
     private String status = "success";
     private int code = 1;
-    private T data;
     private String message = "요청이 성공적으로 처리되었습니다.";
+    private T data;
 }

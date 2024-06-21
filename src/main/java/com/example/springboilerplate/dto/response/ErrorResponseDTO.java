@@ -10,7 +10,9 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ErrorResponseDTO {
+    private String status = "error";
+    private int code = 0;
     private int statusCode;
-    private String errorMessage;
+    private String message;
     private Map<String, Object> errorDetails;
 }
