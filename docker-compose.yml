@@ -1,0 +1,27 @@
+#version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: boilerplate-mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: test
+      MYSQL_PASSWORD: testpass
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_USER_HOST: '%'
+    ports:
+      - "3306:3306"
+    command: --default-authentication-plugin=caching_sha2_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    #networks:
+      #- mynetwork
+
+volumes:
+  mysql_data:
+
+networks:
+  mynetwork:
+    driver: bridge
