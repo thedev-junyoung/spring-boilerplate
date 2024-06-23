@@ -4,9 +4,9 @@ import com.example.springboilerplate.type.UserRole;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
-@Data
+@Data // Getter, Setter, toString, equals, hashCode를 자동으로 생성
+
 public class UserDTO {
     Long userId;
     String email;
