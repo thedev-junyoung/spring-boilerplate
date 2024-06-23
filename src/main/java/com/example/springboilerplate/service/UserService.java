@@ -3,14 +3,18 @@ package com.example.springboilerplate.service;
 import com.example.springboilerplate.dto.user.UpdateUserRequest;
 import com.example.springboilerplate.dto.user.UserDTO;
 import com.example.springboilerplate.entity.User;
+import com.example.springboilerplate.exception.CustomException;
 import com.example.springboilerplate.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -28,9 +32,9 @@ public class UserService {
         this.modelMapper = modelMapper;
     }
 
-    public Optional<UserDTO> getUserById(Long id) {
-        return userRepository.findById(id)
-                .map(user -> modelMapper.map(user, UserDTO.class));
+    public UserDTO getUserById(Long id) {
+        User user = findUserById(id);
+        return modelMapper.map(user, UserDTO.class);
     }
 
     public List<UserDTO> getAllUsers() {
@@ -40,24 +44,32 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    public UserDTO updateUser(long id, UpdateUserRequest updateRequest) {
+        User user = findUserById(id);
 
-    public Optional<User> updateUser(long id, UpdateUserRequest updateRequest) {
-        return userRepository.findById(id).map(user -> {
-            Optional.ofNullable(updateRequest.getUsername()).ifPresent(user::setUsername);
-            // 비밀번호를 먼저 확인하고 암호화
-            Optional.ofNullable(updateRequest.getPassword())
-                    .filter(password -> !password.isEmpty()) // 빈 문자열이 아닌지 확인
-                    .map(bCryptPasswordEncoder::encode) // 비밀번호 암호화
-                    .ifPresent(user::setPassword); // 암호화된 비밀번호 설정
+        Optional.ofNullable(updateRequest.getUsername()).ifPresent(user::setUsername);
+        Optional.ofNullable(updateRequest.getPassword())
+                .filter(password -> !password.isEmpty())
+                .map(bCryptPasswordEncoder::encode)
+                .ifPresent(user::setPassword);
+        Optional.ofNullable(updateRequest.getProfileImg()).ifPresent(user::setProfileImg);
 
-            Optional.ofNullable(updateRequest.getProfileImg()).ifPresent(user::setProfileImg);
-            return userRepository.save(user);
-        });
+        User updatedUser = userRepository.save(user);
+        return modelMapper.map(updatedUser, UserDTO.class);
     }
 
     public void deleteUser(long id) {
-        userRepository.deleteById(id);
+        User user = findUserById(id);
+        userRepository.delete(user);
     }
 
-
+    private User findUserById(long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> { // orElseThrow: 해당 값이 존재하지 않을 때 예외를 발생시킴
+                    Map<String, Object> errorDetails = new HashMap<>();
+                    errorDetails.put("userId", id);
+                    errorDetails.put("error", "User not found");
+                    return new CustomException("User not found with id: " + id, HttpStatus.NOT_FOUND, errorDetails);
+                });
+    }
 }
