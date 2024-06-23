@@ -27,8 +27,7 @@ class JoinServiceTest {
 
     @BeforeEach
     void setUp() {
-        // 위에 생성된 mock 초기화
-        MockitoAnnotations.openMocks(this);
+        // 위에 생성된 moock 초기화
     }
 
     @Test
@@ -75,22 +74,4 @@ class JoinServiceTest {
         assertTrue(thrown.getMessage().contains("Email already exists"));
         verify(userRepository, never()).save(any());
     }
-    @Test
-    public void join_ShouldThrowIllegalArgumentException_WhenEmailAlreadyExists() {
-        // Given
-        String email = "test@example.com";
-        JoinRequest joinRequest = new JoinRequest();
-        joinRequest.setEmail(email);
-        joinRequest.setPassword("password");
-        joinRequest.setUsername("username");
-
-        // Mock the behavior of userRepository.existsByEmail to return true
-        when(userRepository.existsByEmail(anyString())).thenReturn(true);
-
-        // When & Then
-        assertThrows(IllegalArgumentException.class, () -> {
-            joinService.join(joinRequest);
-        });
-    }
-
 }
