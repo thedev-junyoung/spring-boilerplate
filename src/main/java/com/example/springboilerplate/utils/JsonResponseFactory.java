@@ -25,10 +25,7 @@ public class JsonResponseFactory implements ResponseFactory {
     @Override
     public <T> ResponseEntity<SuccessResponseDTO<T>> createSuccessResponse(T data, String message) {
         SuccessResponseDTO<T> response = new SuccessResponseDTO<>(
-                "success",
-                1,
-                message,
-                data
+                message, data
         );
         return ResponseEntity.ok(response);
     }
@@ -36,13 +33,10 @@ public class JsonResponseFactory implements ResponseFactory {
     @Override
     public ResponseEntity<ErrorResponseDTO> createErrorResponse(HttpStatus status, String errorMessage, String method, String path) {
         Map<String, Object> errorDetails = new HashMap<>();
-
-        errorDetails.put("path", path);
         errorDetails.put("method", method);
+        errorDetails.put("path", path);
 
         ErrorResponseDTO response = new ErrorResponseDTO(
-                "error",
-                0,
                 status.value(),
                 errorMessage,
                 errorDetails

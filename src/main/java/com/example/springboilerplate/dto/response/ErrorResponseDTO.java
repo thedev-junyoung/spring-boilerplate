@@ -6,13 +6,8 @@ import lombok.NoArgsConstructor;
 
 import java.util.Map;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class ErrorResponseDTO {
-    private String status = "error";
-    private int code = 0;
-    private int statusCode;
-    private String message;
-    private Map<String, Object> errorDetails;
+public class ErrorResponseDTO extends BaseResponseDTO<Map<String, Object>> {
+    public ErrorResponseDTO(int httpStatusCode, String message, Map<String, Object> errorDetails) {
+        super(httpStatusCode, "error", 0, message, errorDetails);
+    }
 }
