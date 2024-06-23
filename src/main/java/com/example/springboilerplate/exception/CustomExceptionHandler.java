@@ -2,6 +2,7 @@ package com.example.springboilerplate.exception;
 
 import com.example.springboilerplate.dto.response.ErrorResponseDTO;
 import com.example.springboilerplate.utils.ResponseFactory;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.DuplicateFormatFlagsException;
 import java.util.NoSuchElementException;
 
 @RestControllerAdvice
@@ -109,6 +111,25 @@ public class CustomExceptionHandler {
         return responseFactory.createErrorResponse(
                 (HttpStatus) ex.getStatus(),
                 ex.getMessage(),
+                request.getMethod(),
+                request.getRequestURI()
+        );
+    }
+    // ExpiredJwtException 핸들러 추가
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<ErrorResponseDTO> handleExpiredJwtException(ExpiredJwtException ex, HttpServletRequest request) {
+        return responseFactory.createErrorResponse(
+                HttpStatus.UNAUTHORIZED,
+                "JWT expired: " + ex.getMessage(),
+                request.getMethod(),
+                request.getRequestURI()
+        );
+    }
+    @ExceptionHandler(DuplicateFormatFlagsException.class)
+    public ResponseEntity<ErrorResponseDTO> handleEDuplicateFormatFlagsException(ExpiredJwtException ex, HttpServletRequest request) {
+        return responseFactory.createErrorResponse(
+                HttpStatus.UNAUTHORIZED,
+                "DuplicateFormatFlagsException: " + ex.getMessage(),
                 request.getMethod(),
                 request.getRequestURI()
         );
