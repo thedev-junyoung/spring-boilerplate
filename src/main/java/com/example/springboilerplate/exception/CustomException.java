@@ -1,9 +1,11 @@
 package com.example.springboilerplate.exception;
 
+import lombok.Getter;
 import org.springframework.http.HttpStatusCode;
 
 import java.util.Map;
 
+@Getter
 public class CustomException extends RuntimeException {
     private final HttpStatusCode status;
     private final Map<String, Object> details;
@@ -14,11 +16,4 @@ public class CustomException extends RuntimeException {
         this.details = details;
     }
 
-    public HttpStatusCode getStatus() {
-        return status;
-    }
-
-    public Map<String, Object> getDetails() {
-        return details;
-    }
 }
