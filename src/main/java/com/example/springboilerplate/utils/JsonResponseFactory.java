@@ -34,15 +34,17 @@ public class JsonResponseFactory implements ResponseFactory {
     }
 
     @Override
-    public ResponseEntity<ErrorResponseDTO> createErrorResponse(HttpStatus status, String message, Object details) {
+    public ResponseEntity<ErrorResponseDTO> createErrorResponse(HttpStatus status, String errorMessage, String method, String path) {
         Map<String, Object> errorDetails = new HashMap<>();
-        errorDetails.put("error", details);
+
+        errorDetails.put("path", path);
+        errorDetails.put("method", method);
 
         ErrorResponseDTO response = new ErrorResponseDTO(
                 "error",
                 0,
                 status.value(),
-                message,
+                errorMessage,
                 errorDetails
         );
         return new ResponseEntity<>(response, status);

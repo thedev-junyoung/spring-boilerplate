@@ -5,6 +5,8 @@ import com.example.springboilerplate.dto.user.UserDTO;
 import com.example.springboilerplate.entity.User;
 import com.example.springboilerplate.repository.UserRepository;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +20,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final ModelMapper modelMapper;
-
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder,
                        ModelMapper modelMapper){
         this.userRepository = userRepository;
@@ -32,6 +34,7 @@ public class UserService {
     }
 
     public List<UserDTO> getAllUsers() {
+        logger.info("get all users");
         return userRepository.findAll().stream()
                 .map((element) -> modelMapper.map(element, UserDTO.class))
                 .collect(Collectors.toList());

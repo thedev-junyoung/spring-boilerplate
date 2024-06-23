@@ -47,11 +47,15 @@ public class User{
     private String profileImg;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "role", columnDefinition = "varchar(255) default 'USER'") // 기본값 설정
     private UserRole role;
 
 
-    @PrePersist
+    @PrePersist // 엔터티가 영속화 되기 전에 실행
     protected void onCreate() {
+        if (role == null) {
+            role = UserRole.USER; // 기본값 설정
+        }
         createdAt = LocalDateTime.now();
     }
 

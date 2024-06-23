@@ -19,7 +19,7 @@ public class JoinService {
 
     public void join(JoinRequest joinRequest){
         if (userRepository.existsByEmail(joinRequest.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new IllegalArgumentException("이미 등록된 이메일 입니다.");
         }
         User user = new User();
         user.setUsername(joinRequest.getUsername());

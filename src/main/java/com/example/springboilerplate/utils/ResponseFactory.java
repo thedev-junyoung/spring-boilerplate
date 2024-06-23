@@ -15,7 +15,7 @@ public interface ResponseFactory {
     <T> ResponseEntity<SuccessResponseDTO<T>> createSuccessResponse(T data, String message);
 
     // 오류 응답을 생성하는 메서드
-    ResponseEntity<ErrorResponseDTO> createErrorResponse(HttpStatus status, String message, Object details);
+    ResponseEntity<ErrorResponseDTO> createErrorResponse(HttpStatus status, String errorMessage, String method, String path);
 
     // JSON 응답을 작성하는 메서드
     void writeJsonResponse(HttpServletResponse response, Object responseObject, HttpStatusCode status) throws IOException;

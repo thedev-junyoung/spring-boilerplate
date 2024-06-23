@@ -74,7 +74,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
         logger.info("로그인 실패");
         ResponseEntity<ErrorResponseDTO> errorResponse = responseFactory.createErrorResponse(
-                HttpStatus.UNAUTHORIZED, "로그인 실패: " + failed.getMessage(), request.getRequestURI());
+                HttpStatus.UNAUTHORIZED, "로그인 실패: " + failed.getMessage(), request.getMethod() ,request.getRequestURI());
         responseFactory.writeJsonResponse(response, errorResponse.getBody(), errorResponse.getStatusCode());
     }
 }

@@ -43,7 +43,6 @@ public class JWT {
                 .parseSignedClaims(token)
                 .getPayload()
                 .get("role", String.class);
-
     }
 
     public Boolean isExpired(String token){
