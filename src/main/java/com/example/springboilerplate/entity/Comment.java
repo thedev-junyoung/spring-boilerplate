@@ -9,17 +9,19 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-public class Comment {
+public class Comment{
 
-    @EmbeddedId // 복합 키 사용
-    private CommentId id;
+    //@EmbeddedId // 복합 키 사용
+    //private CommentId id;
+    // 20:51:26.614 [http-nio-8080-exec-1] ERROR o.h.e.jdbc.spi.SqlExceptionHelper [SqlExceptionHelper.java:150] [logExceptions] - Duplicate entry '1-2' for key 'comment.PRIMARY'
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long commentId;
 
-    @MapsId("userId") // CommentId의 userId와 연결
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @MapsId("boardId") // CommentId의 boardId와 연결
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id", nullable = false)
     private Board board;
@@ -43,3 +45,4 @@ public class Comment {
         updatedAt = LocalDateTime.now();
     }
 }
+
