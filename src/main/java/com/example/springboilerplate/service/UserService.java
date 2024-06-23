@@ -5,6 +5,7 @@ import com.example.springboilerplate.dto.user.UserDTO;
 import com.example.springboilerplate.entity.User;
 import com.example.springboilerplate.exception.CustomException;
 import com.example.springboilerplate.repository.UserRepository;
+import org.springframework.transaction.annotation.Transactional; // 스프링 트랜잭션 애너테이션 사용
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,19 +32,19 @@ public class UserService {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.modelMapper = modelMapper;
     }
-
+    @Transactional(readOnly = true) // 읽기 전용 트랜잭션
     public UserDTO getUserById(Long id) {
         User user = findUserById(id);
         return modelMapper.map(user, UserDTO.class);
     }
-
+    @Transactional(readOnly = true) // 읽기 전용 트랜잭션
     public List<UserDTO> getAllUsers() {
         logger.info("get all users");
         return userRepository.findAll().stream()
                 .map((element) -> modelMapper.map(element, UserDTO.class))
                 .collect(Collectors.toList());
     }
-
+    @Transactional // 트랜잭션 처리
     public UserDTO updateUser(long id, UpdateUserRequest updateRequest) {
         User user = findUserById(id);
 
@@ -57,7 +58,7 @@ public class UserService {
         User updatedUser = userRepository.save(user);
         return modelMapper.map(updatedUser, UserDTO.class);
     }
-
+    @Transactional // 트랜잭션 처리
     public void deleteUser(long id) {
         User user = findUserById(id);
         userRepository.delete(user);
