@@ -1,8 +1,11 @@
 package com.example.springboilerplate.filters;
 
+import com.example.springboilerplate.dto.response.ErrorResponseDTO;
 import com.example.springboilerplate.dto.user.AppUserDetails;
 import com.example.springboilerplate.entity.User;
 import com.example.springboilerplate.utils.JWT;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,12 +13,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.example.springboilerplate.type.UserRole;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JWTFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(JWTFilter.class);
@@ -26,55 +32,67 @@ public class JWTFilter extends OncePerRequestFilter {
         this.jwt = jwt;
     }
 
-    // 요청 헤더에서 JWT 토큰을 추출하고 검증 - 모든요청
-    // 토큰이 유효하면 사용자 정보를 설정하고, SecurityContextHolder에 Authentication 객체를 설정
-    // 필터 체인의 다음 필터를 호출
-
-
-
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         logger.info("시작");
-        //request에서 Authorization 헤더를 찾음
-        String authorization= request.getHeader("Authorization");
-        logger.info("authorization:"+authorization);
-        //Authorization 헤더 검증 Berer zxxxx
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-            logger.info("토큰이 없거나 유효하지않음. doFilter 호출");
-            filterChain.doFilter(request, response);
 
-            //조건이 해당되면 메소드 종료 (필수)
+        String authorization = request.getHeader("Authorization");
+        logger.info("authorization: {}", authorization);
+
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            logger.info("토큰이 없거나 유효하지 않음");
+            filterChain.doFilter(request, response);
             return;
         }
 
         String token = authorization.split(" ")[1];
-        //토큰 소멸 시간 검증
-        if (jwt.isExpired(token)) {
-            logger.info("token expired");
+        try {
+            if (jwt.isExpired(token)) {
+                throw new ExpiredJwtException(null, null, "토큰이 만료되었습니다.");
+            }
+
+            String email = jwt.getEmail(token);
+            String role = jwt.getRole(token);
+            logger.info("username: {}", email);
+            logger.info("role: {}", role);
+
+            User user = new User();
+            user.setEmail(email);
+            user.setPassword("temppassword");
+            user.setRole(UserRole.valueOf(role));
+
+            AppUserDetails customUserDetails = new AppUserDetails(user);
+            Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+
             filterChain.doFilter(request, response);
 
-            //조건이 해당되면 메소드 종료 (필수)
-            return;
+        } catch (ExpiredJwtException ex) {
+            logger.info("토큰이 만료되었습니다: {}", ex.getMessage());
+            handleJwtException(response, HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다.");
+        } catch (Exception ex) {
+            logger.error("JWT 처리 중 오류 발생", ex);
+            handleJwtException(response, HttpStatus.INTERNAL_SERVER_ERROR, "JWT 처리 중 오류 발생");
         }
-        String email = jwt.getEmail(token);
-        String role = jwt.getRole(token);
-        logger.info("username:"+email);
-        logger.info("role:"+role);
 
-        // 사용자 정보를 SecurityContextHolder에 설정
-        User user = new User();
-        user.setEmail(email);
-        user.setPassword("temppassword");
-        user.setRole(UserRole.valueOf(role));
-
-        AppUserDetails customUserDetails = new AppUserDetails(user);
-
-        Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
-
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-        logger.info("filterChain.doFilter(request, response); 전");
-        // 다음 필터로 요청 전달
-        filterChain.doFilter(request, response);
         logger.info("끝");
+    }
+
+    private void handleJwtException(HttpServletResponse response, HttpStatus status, String message) throws IOException {
+        response.setStatus(status.value());
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        Map<String, Object> errorDetails = new HashMap<>();
+        errorDetails.put("error", message);
+
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+                status.value(),
+                message,
+                errorDetails
+        );
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 }
