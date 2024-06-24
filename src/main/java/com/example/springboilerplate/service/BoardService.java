@@ -1,6 +1,7 @@
 package com.example.springboilerplate.service;
 
 import com.example.springboilerplate.dto.board.BoardDTO;
+import com.example.springboilerplate.dto.comment.CommentDTO;
 import com.example.springboilerplate.entity.Board;
 import com.example.springboilerplate.entity.User;
 import com.example.springboilerplate.exception.CustomException;
@@ -35,15 +36,30 @@ public class BoardService {
     @Transactional(readOnly = true) // 읽기 전용 트랜잭션
     public BoardDTO getBoardById(Long id) {
         Board board = findBoardById(id);
-        return modelMapper.map(board, BoardDTO.class);
+        BoardDTO boardDTO = modelMapper.map(board, BoardDTO.class);
+        // 댓글 목록을 DTO로 매핑하여 추가
+        List<CommentDTO> commentDTOs = board.getComments().stream()
+                .map(comment -> modelMapper.map(comment, CommentDTO.class))
+                .collect(Collectors.toList());
+        boardDTO.setComments(commentDTOs);
+
+        return boardDTO;
+        //return modelMapper.map(board, BoardDTO.class);
     }
 
     @Transactional(readOnly = true) // 읽기 전용 트랜잭션
     public List<BoardDTO> getAllBoards() {
-        logger.info("Retrieving all boards");
-        return boardRepository.findAll().stream()
-                .map(board -> modelMapper.map(board, BoardDTO.class))
-                .collect(Collectors.toList());
+        logger.info("모든 게시판 조회");
+        return boardRepository.findAll().stream() // 게시판 목록 조회
+                .map(board -> { // 게시판 목록을 DTO 로 매핑하여 추가
+                    BoardDTO boardDTO = modelMapper.map(board, BoardDTO.class); // 게시판 DTO 로 매핑
+                    List<CommentDTO> commentDTOs = board.getComments().stream() // 댓글 목록을 DTO 로 매핑하여 추가
+                            .map(comment -> modelMapper.map(comment, CommentDTO.class)) // 댓글 DTO 로 매핑
+                            .collect(Collectors.toList()); // 댓글 목록을 List 로 변환
+                    boardDTO.setComments(commentDTOs); // 게시판 DTO 에 댓글 목록 추가
+                    return boardDTO;
+                })
+                .collect(Collectors.toList()); // 게시판 목록을 List 로 변환
     }
 
     @Transactional // 트랜잭션 처리

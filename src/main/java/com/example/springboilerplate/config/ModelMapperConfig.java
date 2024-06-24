@@ -18,15 +18,15 @@ public class ModelMapperConfig {
     public ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setFieldMatchingEnabled(true).setFieldAccessLevel(org.modelmapper.config.Configuration.AccessLevel.PRIVATE);
+        // LocalDateTime to String 변환
         Converter<LocalDateTime, String> toStringDate = new Converter<>() {
-            // LocalDateTime to String 변환
             @Override
             public String convert(MappingContext<LocalDateTime, String> context) {
                 return context.getSource() != null ? context.getSource().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
             }
         };
+        // Comment 엔티티를 CommentDTO 로 매핑
         modelMapper.addMappings(new PropertyMap<Comment, CommentDTO>() {
-            // Comment 엔티티를 CommentDTO 로 매핑
             @Override
             protected void configure() {
                 using(toStringDate).map(source.getCreatedAt()).setCreatedAt(null);
