@@ -33,33 +33,35 @@ public class BoardService {
         this.modelMapper = modelMapper;
     }
 
-    @Transactional(readOnly = true) // 읽기 전용 트랜잭션
+    @Transactional(readOnly = true)
     public BoardDTO getBoardById(Long id) {
-        Board board = findBoardById(id);
+        Board board = findBoardByIdWithComments(id);
         BoardDTO boardDTO = modelMapper.map(board, BoardDTO.class);
-        // 댓글 목록을 DTO로 매핑하여 추가
+
+        // 댓글 목록을 DTO로 변환하여 설정
         List<CommentDTO> commentDTOs = board.getComments().stream()
                 .map(comment -> modelMapper.map(comment, CommentDTO.class))
                 .collect(Collectors.toList());
         boardDTO.setComments(commentDTOs);
 
         return boardDTO;
-        //return modelMapper.map(board, BoardDTO.class);
     }
 
     @Transactional(readOnly = true) // 읽기 전용 트랜잭션
     public List<BoardDTO> getAllBoards() {
         logger.info("모든 게시판 조회");
-        return boardRepository.findAll().stream() // 게시판 목록 조회
-                .map(board -> { // 게시판 목록을 DTO 로 매핑하여 추가
-                    BoardDTO boardDTO = modelMapper.map(board, BoardDTO.class); // 게시판 DTO 로 매핑
-                    List<CommentDTO> commentDTOs = board.getComments().stream() // 댓글 목록을 DTO 로 매핑하여 추가
-                            .map(comment -> modelMapper.map(comment, CommentDTO.class)) // 댓글 DTO 로 매핑
-                            .collect(Collectors.toList()); // 댓글 목록을 List 로 변환
-                    boardDTO.setComments(commentDTOs); // 게시판 DTO 에 댓글 목록 추가
+        // Fetch join을 사용하여 모든 게시판과 댓글을 한 번에 가져옴
+        List<Board> boards = boardRepository.findAllWithComments();
+
+        return boards.stream()
+                .map(board -> {
+                    BoardDTO boardDTO = modelMapper.map(board, BoardDTO.class);
+                    List<CommentDTO> commentDTOs = board.getComments().stream()
+                            .map(comment -> modelMapper.map(comment, CommentDTO.class))
+                            .collect(Collectors.toList());
+                    boardDTO.setComments(commentDTOs);
                     return boardDTO;
-                })
-                .collect(Collectors.toList()); // 게시판 목록을 List 로 변환
+                }).collect(Collectors.toList());
     }
 
     @Transactional // 트랜잭션 처리
@@ -90,7 +92,6 @@ public class BoardService {
 
     private User findUserById(Long userId) {
         return userRepository.findById(userId)
-                //.orElseThrow(() -> new CustomException("User not found with id: " + userId, HttpStatus.NOT_FOUND));
                 .orElseThrow(()->{
                     Map<String, Object> errorDetails = new HashMap<>();
                     errorDetails.put("userId", userId);
@@ -102,9 +103,19 @@ public class BoardService {
         return boardRepository.findById(boardId)
                 .orElseThrow(() -> {
                     Map<String, Object> errorDetails = new HashMap<>();
-                    errorDetails.put("userId", boardId);
-                    errorDetails.put("error", "User not found");
+                    errorDetails.put("boardId", boardId);
+                    errorDetails.put("error", "게시판을 찾을 수 없습니다.");
                     return new CustomException("Board not found with id: " + boardId, HttpStatus.NOT_FOUND,errorDetails);
+                });
+    }
+
+    private Board findBoardByIdWithComments(Long boardId) {
+        return boardRepository.findByIdWithComments(boardId)
+                .orElseThrow(() -> {
+                    Map<String, Object> errorDetails = new HashMap<>();
+                    errorDetails.put("boardId", boardId);
+                    errorDetails.put("error", "게시판을 찾을 수 없습니다.");
+                    return new CustomException("Board not found with id: " + boardId, HttpStatus.NOT_FOUND, errorDetails);
                 });
     }
 }
