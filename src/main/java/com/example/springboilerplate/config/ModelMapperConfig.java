@@ -29,11 +29,9 @@ public class ModelMapperConfig {
             // Comment 엔티티를 CommentDTO 로 매핑
             @Override
             protected void configure() {
-                // Explicitly map fields with custom converter
                 using(toStringDate).map(source.getCreatedAt()).setCreatedAt(null);
                 using(toStringDate).map(source.getUpdatedAt()).setUpdatedAt(null);
-                // Map composite key fields explicitly
-                map().setCommentId(source.getId().getBoardId());
+                map().setUuid(source.getId().getUuid());
                 map().setUserId(source.getUser().getUserId());
                 map().setBoardId(source.getBoard().getBoardId());
                 map().setContent(source.getContent());

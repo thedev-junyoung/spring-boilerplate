@@ -65,23 +65,22 @@ public class CommentService {
         return modelMapper.map(createdComment, CommentDTO.class);
     }
 
-
     @Transactional
-    public CommentDTO updateComment(Long id, UpdateCommentDTO updateCommentDTO) {
-        logger.info("Updating comment with ID: {}", id);
-        Comment comment = findCommentById(id);
+    public CommentDTO updateComment(UUID uuid, UpdateCommentDTO updateCommentDTO) {
+        logger.info("Updating comment with UUID: {}", uuid);
+        Comment comment = findCommentByUuid(uuid);
         comment.setContent(updateCommentDTO.getContent());
 
         Comment updatedComment = commentRepository.save(comment);
         return modelMapper.map(updatedComment, CommentDTO.class);
     }
-
     @Transactional
-    public void deleteComment(Long id) {
-        logger.info("Deleting comment with ID: {}", id);
-        Comment comment = findCommentById(id);
+    public void deleteComment(UUID uuid) {
+        logger.info("Deleting comment with UUID: {}", uuid);
+        Comment comment = findCommentByUuid(uuid);
         commentRepository.delete(comment);
     }
+
 
     private Board findBoardById(Long boardId) {
         return boardRepository.findById(boardId)
@@ -110,6 +109,15 @@ public class CommentService {
                     errorDetails.put("commentId", id);
                     errorDetails.put("error", "Comment not found");
                     return new CustomException("Comment not found with id: " + id, HttpStatus.NOT_FOUND, errorDetails);
+                });
+    }
+    private Comment findCommentByUuid(UUID uuid) {
+        return commentRepository.findByIdUuid(uuid)
+                .orElseThrow(() -> {
+                    Map<String, Object> errorDetails = new HashMap<>();
+                    errorDetails.put("commentUuid", uuid);
+                    errorDetails.put("error", "Comment not found");
+                    return new CustomException("Comment not found with UUID: " + uuid, HttpStatus.NOT_FOUND, errorDetails);
                 });
     }
 

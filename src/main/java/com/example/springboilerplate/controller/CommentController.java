@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/boards/{boardId}/comments")
@@ -38,18 +39,17 @@ public class CommentController {
         CommentDTO createdComment = commentService.createComment(boardId, commentDTO);
         return responseFactory.createSuccessResponse(createdComment, "댓글 생성 성공");
     }
-
-    @PutMapping("/{commentId}") // 댓글 수정
-    public ResponseEntity<?> updateComment(@PathVariable Long commentId, @RequestBody UpdateCommentDTO updateCommentDTO) {
-        logger.info("Updating comment with ID: {}", commentId);
-        CommentDTO updatedComment = commentService.updateComment(commentId, updateCommentDTO);
+    @PutMapping("/{commentUuid}")
+    public ResponseEntity<?> updateComment(@PathVariable("boardId") Long boardId, @PathVariable UUID commentUuid, @RequestBody UpdateCommentDTO updateCommentDTO) {
+        logger.info("Updating comment with UUID: {}", commentUuid);
+        CommentDTO updatedComment = commentService.updateComment(commentUuid, updateCommentDTO);
         return responseFactory.createSuccessResponse(updatedComment, "댓글 수정 성공");
     }
 
-    @DeleteMapping("/{commentId}") // 댓글 삭제
-    public ResponseEntity<?> deleteComment(@PathVariable Long commentId) {
-        logger.info("Deleting comment with ID: {}", commentId);
-        commentService.deleteComment(commentId);
+    @DeleteMapping("/{commentUuid}")
+    public ResponseEntity<?> deleteComment(@PathVariable("boardId") Long boardId, @PathVariable UUID commentUuid) {
+        logger.info("Deleting comment with UUID: {}", commentUuid);
+        commentService.deleteComment(commentUuid);
         return responseFactory.createSuccessResponse(null, "댓글 삭제 성공");
     }
 }
