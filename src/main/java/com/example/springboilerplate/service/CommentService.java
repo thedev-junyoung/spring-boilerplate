@@ -13,18 +13,14 @@ import com.example.springboilerplate.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.DuplicateFormatFlagsException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,8 +52,11 @@ public class CommentService {
         logger.info("Creating comment on board ID: {}", boardId);
         Board board = findBoardById(boardId);
         User user = findUserById(commentDTO.getUserId());
+        UUID uuid = UUID.randomUUID();
+        CommentId commentId = new CommentId(user.getUserId(), board.getBoardId(), uuid);
 
         Comment comment = new Comment();
+        comment.setId(commentId);
         comment.setBoard(board);
         comment.setUser(user);
         comment.setContent(commentDTO.getContent());

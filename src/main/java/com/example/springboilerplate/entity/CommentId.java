@@ -7,8 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.time.Instant;
-import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -18,14 +17,14 @@ public class CommentId implements Serializable {
 
     private Long userId;
     private Long boardId;
-    @Column(name = "timestamp") // 컬럼 이름이 데이터베이스의 필드와 일치해야 함
-    private Instant timestamp;
+    @Column(name = "uuid", unique = true, nullable = false)
+    private UUID uuid;
 
     public CommentId() {}
 
-    public CommentId(Long userId, Long boardId, Instant timestamp) {
+    public CommentId(Long userId, Long boardId, UUID uuid) {
         this.userId = userId;
         this.boardId = boardId;
-        this.timestamp = timestamp;
+        this.uuid = uuid;
     }
 }
