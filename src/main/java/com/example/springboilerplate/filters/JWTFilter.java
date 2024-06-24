@@ -61,10 +61,14 @@ public class JWTFilter extends OncePerRequestFilter {
             user.setPassword("temppassword");
             user.setRole(UserRole.valueOf(role));
 
+            // JWT 가 유효한 경우, 사용자 정보를 SecurityContextHolder 에 설정하여 현재 요청의 인증된 사용자로 만듭니다.
+            // 1. 사용자 정보를 이용하여 UserDetails 객체 생성 (UserDetails: 사용자 정보 + 권한 정보)
             AppUserDetails customUserDetails = new AppUserDetails(user);
+            // 2. Authentication 객체 생성 (Authentication: 사용자 정보 + 권한 정보)
             Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+            // 3. SecurityContextHolder 에 Authentication 객체 설정
             SecurityContextHolder.getContext().setAuthentication(authToken);
-
+            // 4. 필터 체인의 다음 필터 호출
             filterChain.doFilter(request, response);
 
         } catch (ExpiredJwtException ex) {
